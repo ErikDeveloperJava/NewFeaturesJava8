@@ -17,14 +17,16 @@ public class Team {
 
     private String coachName;
 
+    private List<String> wonCupsList;
+
     @Override
     public String toString() {
         return "team name : " +
                 name +
-                "\n" +
+                ", " +
                 "coach name : " +
                 coachName +
-                "\n" +
+                ", " +
                 "footballers : " +
                 footballerList;
     }

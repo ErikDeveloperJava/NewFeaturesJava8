@@ -2,10 +2,12 @@ package java8;
 
 import java8.model.Team;
 import java8.repository.TeamRepository;
-import java8.util.WriterFuncInterface;
-import lombok.Cleanup;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class Test {
@@ -16,40 +18,78 @@ public class Test {
         teamRepository = new TeamRepository();
     }
 
-    //you can input coach name and file name until running application
     public static void main(String[] args) throws IOException {
-        System.out.println("please input coach name and fileName(if you want to write result to file) for example (Alex,f.txt)");
+        boolean isRan = true;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        BufferedWriter writer = null;
-        String inputText = reader.readLine();
-        args = inputText.split(",");
+        while (isRan) {
+            printCommands();
+            int command;
+            try {
+                command = Integer.parseInt(reader.readLine());
+            } catch (NumberFormatException e) {
+                command = -1;
+            }
+            switch (command) {
+                case 0:
+                    isRan = false;
+                    break;
+                case 1:
+                    System.out.println("please input coachName");
+                    String coachName = reader.readLine();
+                    List<Team> teamList = teamRepository.getByCoach(coachName);
+                    System.out.println(!teamList.isEmpty() ? teamList : "teams are not exist");
+                    break;
+                case 2:
+                    System.out.println("please input team name");
+                    String name = reader.readLine();
+                    Optional<Team> teamOptional = teamRepository.getByName(name);
+                    System.out.println(teamOptional.isPresent() ? teamOptional.get() : "team is not exists");
+                    break;
+                case 3:
+                    System.out.println("please input start param");
+                    String startParam = reader.readLine();
+                    List<String> footballerList = teamRepository.getFootballersNameByStartWith(startParam);
+                    System.out.println(!footballerList.isEmpty() ? footballerList : "footballers are not exist");
+                    break;
+                case 4:
+                    System.out.println("please input footballersCount,wonCupsCount");
+                    String[] countParams = reader.readLine().split(",");
+                    List<String> teamNamesList = teamRepository.getTeamNamesByFootballersSizeAndWonCupCount(Integer.parseInt(countParams[0]), Integer.parseInt(countParams[1]));
+                    System.out.println(!teamNamesList.isEmpty() ? teamNamesList : "teams are not exist");
+                    break;
+                case 5:
+                    System.out.println("please input wonCupsCount");
+                    String wonCup = reader.readLine();
+                    int teamsCount = teamRepository.countByGreaterThanEqualWonCupCupsCount(Integer.parseInt(wonCup));
+                    System.out.println("found teams count: " + teamsCount);
+                    break;
+                case 6:
+                    System.out.println("please input joinOperator,cupName for example(,/champions league)");
+                    String[] joinParams = reader.readLine().split("/");
+                    String teamNames = teamRepository.joinTeamNamesByJoinOperatorAndCupName(joinParams[0], joinParams[1]);
+                    System.out.println(teamNames.equals("") ? "teams are not exist" : teamNames);
+                    break;
+                case 7:
+                    System.out.println("please input wonCups for example (a,b,c)");
+                    String[] wonCups = reader.readLine().split(",");
+                    List<String> coachNamesList = teamRepository.getCoachNamesByWonCups(Arrays.asList(wonCups));
+                    System.out.println(!coachNamesList.isEmpty() ? coachNamesList : "coaches are not exist");
+                    break;
+                default:
+                    System.out.println("you input invalid command");
+            }
+        }
+    }
 
-        String outputText;
-        //here used method reference from lambda expression
-        WriterFuncInterface writerFuncInterface;
-
-        String coachName = args[0];
-        String fileName = args.length == 2 ? args[1] : null;
-        Optional<Team> optionalTeam = teamRepository.getByCoach(coachName);
-        // here check is exists Team Object in Optional
-        if (optionalTeam.isPresent()) {
-            Team team = optionalTeam.get();
-            outputText = team.toString();
-        } else {
-            outputText = "Coach whose name is '" + coachName + "' does not exist";
-        }
-        //here checking Did fileName input?
-        if (fileName != null) {
-            writer = new BufferedWriter(new FileWriter(fileName));
-            writerFuncInterface = writer::write;
-            System.out.println("result was written to '" + fileName + "' this file");
-        } else {
-            writerFuncInterface = System.out::println;
-        }
-        writerFuncInterface.outputText(outputText);
-        if(writer != null){
-            writer.close();
-        }
+    public static void printCommands() {
+        System.out.println("please input 0 for exit");
+        System.out.println("please input 1 see all Teams by coach name");
+        System.out.println("please input 2 see Team by name");
+        System.out.println("please input 3 see all footballers whose names are start with");
+        System.out.println("please input 4 see all Team names by Footballers count and won cups count");
+        System.out.println("please input 5 see Teams count by param which is greater than equal won cup count");
+        System.out.println("please input 6 see joined team names by Join operator and cup name");
+        System.out.println("please input 7 see coaches by won cups");
     }
 
 }
